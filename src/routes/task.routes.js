@@ -8,6 +8,7 @@ import {
   getTasks,
   updateSubTask,
   updateTask,
+  generateAISubtasks
 } from "../controllers/task.controllers.js";
 import { validate } from "../middlewares/validator.middleware.js";
 import {
@@ -21,6 +22,7 @@ const router = Router();
 router.use(verifyJWT);
 
 // All roles can view tasks; only Admin/Project Admin can create
+router.route("/ai-subtasks").post(generateAISubtasks);
 router
   .route("/:projectId")
   .get(

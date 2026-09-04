@@ -7,6 +7,9 @@ import { Task } from "../models/task.models.js";
 import mongoose from "mongoose"; // FIX: removed unused/broken `Mongoose` import
 import { UserRolesEnum } from "../utils/constants.js";
 import { Project } from "../models/project.models.js";
+import { GoogleGenAI } from '@google/genai';
+
+// Initialize Gemini client with your API key from .env
 
 
 const getTasks = asyncHandler(async (req, res) => {
@@ -258,6 +261,50 @@ const deleteSubTask = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "SubTask deleted successfully"));
 });
 
+const generateAISubtasks = async (req, res, next) => {
+  console.log("--- STARTING AI SUBTASK GENERATION ---");
+  try {
+    const { title, description } = req.body;
+    console.log("Input received:", { title, description });
+    const apiKey = process.env.GEMINI_API_KEY;
+    console.log("API Key present:", !!apiKey);
+    if (!apiKey) {
+      return res.status(500).json({ success: false, message: "Missing API Key" });
+    }
+    const ai = new GoogleGenAI({ apiKey });
+    const prompt = `You are a project management assistant. 
+For a task titled "${title}" with description "${description || 'None'}", 
+generate 3 to 5 clear, actionable subtasks.
+Return ONLY a valid JSON array of strings without any markdown code blocks or additional text.
+Example format: ["Design database schema", "Create API endpoints", "Write unit tests"]`;
+    console.log("Sending request to Gemini model...");
+    const response = await ai.models.generateContent({
+      model: 'gemini-3.6-flash',
+      contents: prompt,
+    });
+    console.log("Gemini Response received:", response?.text);
+    if (!response || !response.text) {
+      return res.status(500).json({ success: false, message: "Empty AI response" });
+    }
+    const cleanedText = response.text.trim().replace(/^```json\s*|\s*```$/g, '');
+    const subtasks = JSON.parse(cleanedText);
+    return res.status(200).json({
+      success: true,
+      data: subtasks,
+      message: "Subtasks generated successfully"
+    });
+  } catch (err) {
+    console.log("================ HARD ERROR LOG ================");
+    console.log(err);
+    console.log("================================================");
+    
+    return res.status(500).json({ 
+      success: false, 
+      statusCode: 500,
+      message: err.message || "Failed to generate AI subtasks" 
+    });
+  }
+};
 export {
   createSubTask,
   createTask,
@@ -267,4 +314,5 @@ export {
   getTasks,
   updateSubTask,
   updateTask,
+  generateAISubtasks
 };
