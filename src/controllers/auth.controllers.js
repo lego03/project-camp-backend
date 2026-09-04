@@ -105,6 +105,7 @@ const login = asyncHandler(async (req, res) => {
 
   const options = {
     httpOnly: true,
+     sameSite: "none",
     secure: true,
   };
 
@@ -140,6 +141,7 @@ const logoutUser = asyncHandler(async (req, res) => {
   const options = {
     httpOnly: true,
     secure: true,
+    sameSite: "none",
   };
   return res
     .status(200)
@@ -245,6 +247,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     const options = {
       httpOnly: true,
       secure: true,
+      sameSite: "none",
     };
 
     // FIX: was calling `generateAccessAndRefreshTokens` (plural) — the defined function
