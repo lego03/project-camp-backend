@@ -10,6 +10,7 @@ import {
   deleteProject,
   updateMemberRole,
 } from "../controllers/project.controllers.js";
+import { getProjectAnalytics } from "../controllers/analytics.controllers.js";
 import { validate } from "../middlewares/validator.middleware.js";
 import {
   createProjectValidator,
@@ -57,4 +58,5 @@ router
   .put(validateProjectPermission([UserRolesEnum.ADMIN]), updateMemberRole)
   .delete(validateProjectPermission([UserRolesEnum.ADMIN]), deleteMember);
 
+  router.route("/:projectId/analytics").get(getProjectAnalytics);
 export default router;
