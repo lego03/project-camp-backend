@@ -28,7 +28,7 @@ const getTasks = asyncHandler(async (req, res) => {
 });
 
 const createTask = asyncHandler(async (req, res) => {
-  const { title, description, assignedTo, status } = req.body;
+  const { title, description, assignedTo, status, dueDate } = req.body;
   const { projectId } = req.params;
   const project = await Project.findById(projectId);
 
@@ -53,6 +53,7 @@ const createTask = asyncHandler(async (req, res) => {
       ? new mongoose.Types.ObjectId(assignedTo)
       : undefined,
     status,
+    dueDate: dueDate ? new Date(dueDate) : undefined,
     assignedBy: new mongoose.Types.ObjectId(req.user._id),
     attachments,
   });
